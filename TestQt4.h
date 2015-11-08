@@ -22,6 +22,10 @@
 #include <vtkImageMapToColors.h>
 #include <vtkImageMapper3D.h>
 
+#include <vtkOutlineFilter.h>
+#include <vtkPolyDataMapper.h>
+#include <vtkProperty.h>
+
 #include <itkImage.h>
 #include <itkImageFileReader.h>
 #include <itkImageToVTKImageFilter.h>
@@ -65,7 +69,6 @@ class TestQt4 :public QMainWindow, public Ui::MainWindow
     void dropEvent(QDropEvent* Qevent) ;
     void dragEnterEvent(QDragEnterEvent *Qevent); // enable drag&drop
     vtkSmartPointer<vtkLookupTable> lookupTable ;
-    vtkSmartPointer<vtkImageActor> maskActor ;
 };
 
 #endif

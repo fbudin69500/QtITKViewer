@@ -65,7 +65,6 @@ TestQt4::TestQt4(QWidget * parent , Qt::WFlags f  ): QMainWindow(parent, f)
    lookupTable->SetTableValue( 0, 0.0, 0.0, 0.0, 0.0 ); //label 0 is transparent
    lookupTable->SetTableValue( 1, 0.0, 1.0, 0.0, 1.0 ); //label 1 is opaque and green
    lookupTable->Build();
-   maskActor = vtkSmartPointer<vtkImageActor>::New();
 }
 
 void TestQt4::slotSliceOrientation(int slice)
@@ -157,8 +156,32 @@ void TestQt4::MaskFileChanged()
   mapTransparency->PassAlphaToOutputOn();
   mapTransparency->SetInput(image);
 
-  maskActor->GetMapper()->SetInputConnection( mapTransparency->GetOutputPort() ) ;
+  //maskActor->GetMapper()->SetInputConnection( mapTransparency->GetOutputPort() ) ;
+  vtkSmartPointer<vtkImageActor> maskActor = vtkSmartPointer<vtkImageActor>::New();
+  maskActor->SetInput(image);
   image_view->GetRenderer()->AddActor(maskActor);
+  std::cout<<image_view->GetRenderer()->GetActors()->GetNumberOfItems()<<std::endl;
+  /*image_view->GetRenderer()->GetActors()->InitTraversal();
+  for( int i = 0; i < image_view->GetRenderer()->GetActors()->GetNumberOfItems() ; i++)
+  {
+      image_view->GetRenderer()->GetActors()->GetNextActor()->Print(std::cout) ;
+  }*/
+
+  vtkOutlineFilter *outline = vtkOutlineFilter::New();
+  outline->SetInput ( image_view->GetImageActor()->GetInput() );
+  vtkPolyDataMapper *outlineMapper = vtkPolyDataMapper::New();
+  outlineMapper->SetInput ( outline->GetOutput() );
+  vtkActor *OutlineActor = vtkActor::New();
+  OutlineActor->SetMapper ( outlineMapper );
+  std::cout<<"before outline:"<<image_view->GetRenderer()->GetActors()->GetNumberOfItems()<<std::endl;
+
+  OutlineActor->GetProperty()->SetColor ( 1.0, 0.0, 0.0 );
+  image_view->GetRenderer()->AddActor ( OutlineActor );
+  std::cout<<"after outline:"<<image_view->GetRenderer()->GetActors()->GetNumberOfItems()<<std::endl;
+
+
+
+
   image_view->GetRenderer()->ResetCamera();
   image_view->Render();
   visu->update() ;
@@ -225,7 +248,7 @@ void TestQt4::FileChanged()
 
   vtkSmartPointer<vtkImageActor> imageActor =
       vtkSmartPointer<vtkImageActor>::New();
-    imageActor->SetInput(image);
+  imageActor->SetInput(image);
   image_view->GetRenderer()->AddActor(imageActor);
   radioButtons->show();
   XradioButton->setChecked(true);
@@ -255,6 +278,21 @@ void TestQt4::FileChanged()
   visu->SetRenderWindow(image_view->GetRenderWindow());
   image_view->SetupInteractor(visu->GetRenderWindow()->GetInteractor());
   slotSliceOrientation(0);
+
+
+  vtkOutlineFilter *outline = vtkOutlineFilter::New();
+  outline->SetInput ( image_view->GetImageActor()->GetInput() );
+  vtkPolyDataMapper *outlineMapper = vtkPolyDataMapper::New();
+  outlineMapper->SetInput ( outline->GetOutput() );
+  vtkActor *OutlineActor = vtkActor::New();
+  OutlineActor->SetMapper ( outlineMapper );
+  std::cout<<image_view->GetRenderer()->GetActors()->GetNumberOfItems()<<std::endl;
+
+  OutlineActor->GetProperty()->SetColor ( 1.0, 0.0, 0.0 );
+  image_view->GetRenderer()->AddActor ( OutlineActor );
+  std::cout<<image_view->GetRenderer()->GetActors()->GetNumberOfItems()<<std::endl;
+
+
   image_view->GetRenderer()->ResetCamera();
   image_view->Render();
   visu->update() ;
